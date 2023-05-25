@@ -1,0 +1,36 @@
+version: "3.7"
+services:
+  mongo:
+    image: mongo:3.6
+    restart: unless-stopped
+    volumes:
+      - db:/data/db
+    ports:
+      - 27017:27017
+  backend:
+    depends_on:
+      - mongo
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    image: notification-backend
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    stdin_open: true
+    tty: true
+  client:
+    depends_on:
+      - backend
+    build: ./client
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    image: notification-client
+    volumes:
+      - ./client:/app/client
+
+volumes:
+  db:
