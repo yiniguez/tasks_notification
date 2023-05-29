@@ -2,16 +2,17 @@ version: "3.7"
 services:
   mongo:
     image: mongo:3.6
-    restart: unless-stopped
     volumes:
       - db:/data/db
     ports:
       - 27017:27017
+    networks:
+      default:
+        ipv4_address: 10.5.0.4
   backend:
     depends_on:
       - mongo
     build: ./backend
-    restart: unless-stopped
     ports:
       - 4000:4000
     image: notification-backend
@@ -21,16 +22,29 @@ services:
       - ./backend:/app
     stdin_open: true
     tty: true
+    networks:
+      default:
+        ipv4_address: 10.5.0.3
   client:
     depends_on:
       - backend
     build: ./client
-    restart: unless-stopped
     ports:
       - 8080:8080
     image: notification-client
     volumes:
       - ./client:/app/client
 
+    networks:
+      default:
+        ipv4_address: 10.5.0.2
+
 volumes:
   db:
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
